@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <unistd.h>
 #include <iostream>
+#include <vector>
 #include "video_reader.hpp"
 
 
@@ -25,8 +26,26 @@ int main(int argc, const char** argv) {
 //    std::string src = "/Users/anshulsaraf/Downloads/40_sss_loop.mov" ;
 //    std::string src = "/Users/anshulsaraf/Downloads/colour_particals.mov" ;
 
-    std::string src = "/Users/anshulsaraf/Downloads/sample-5s.mp4" ;
-    decoder.InitDecoder(src, true);
+//    std::string src = "/Users/anshulsaraf/Downloads/2a3d50ef_1647944187358_sc.webm";
+
+//    std::string src = "/Users/anshulsaraf/Downloads/file_example_AVI_640_800kB.avi" ;
+
+//    std::string src = "/Users/anshulsaraf/Downloads/sample_640x360.hevc" ; **
+//    std::string src = "/Users/anshulsaraf/Downloads/sample_640x360.flv" ;
+
+//    std::string src = "/Users/anshulsaraf/Downloads/sample-5s.mp4" ;
+
+    std::vector<std::string> src = {
+            "/Users/anshulsaraf/Downloads/40_sss_loop.mov", // 4k file - 0
+            "/Users/anshulsaraf/Downloads/colour_particals.mov", // 1
+            "/Users/anshulsaraf/Downloads/2a3d50ef_1647944187358_sc.webm", // 2 // looping solved
+            "/Users/anshulsaraf/Downloads/file_example_AVI_640_800kB.avi", // 3
+            "/Users/anshulsaraf/Downloads/sample_640x360.hevc", // not looping // 4 // av_format_ctx-> start_time and duration == (int64 overflow)
+            "/Users/anshulsaraf/Downloads/sample_640x360.flv", // 5
+            "/Users/anshulsaraf/Downloads/sample-5s.mp4" // 6
+    };
+
+    decoder.InitDecoder(src[0], true);
 
     glfwMakeContextCurrent(window);
 
@@ -65,9 +84,10 @@ int main(int argc, const char** argv) {
 
         // Read a new frame and load it into texture
 //        int64_t pts;
+
         if (!decoder.Decode(frames++, frame_data)) {
             printf("Couldn't load video frame\n");
-            return 1;
+            break;
         }
 
         static bool first_frame = true;

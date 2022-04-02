@@ -387,6 +387,8 @@ namespace ShutterAndroidJNI{
             }
             if (!sws_scaler_ctx) {
                 fprintf(stderr,"Couldn't initialize sw scaler\n");
+
+                av_packet_unref(av_packet);
                 return false;
             }
 
@@ -398,19 +400,33 @@ namespace ShutterAndroidJNI{
                 sws_scale(sws_scaler_ctx, av_frame->data, av_frame->linesize, 0, av_frame->height, dest, dest_linesize);
 
             // if here , we read 1 frame successfully
+
+            av_packet_unref(av_packet);
             return true;
         }
         if( is_loop ){
-            fprintf(stdout,"LOOPING\n");
+            loop_cnt++;
+            fprintf(stderr,"LOOPING %dth time\n", loop_cnt);
+            if(loop_cnt > 5){
+                fprintf(stderr,"LOOPED %d times, now releasing\n", loop_cnt);
+
+                av_packet_unref(av_packet);
+                return false;
+            }
             auto stream = av_format_ctx->streams[video_stream_idx];
             avio_seek(av_format_ctx->pb, 0, SEEK_SET);
-            avformat_seek_file(av_format_ctx, video_stream_idx, 0, 0, stream->duration, 0);
+            avformat_seek_file(av_format_ctx, video_stream_idx, av_format_ctx->start_time, av_format_ctx->start_time, av_format_ctx->duration, 0);
+
+            av_packet_unref(av_packet);
             return true;
         }
+
+        av_packet_unref(av_packet);
         return false;
     }
 
     void LibavVideoDecoder::ReleaseDecoder(){
+        fprintf(stderr, "Decoder Destroyed initiated\n");
         avcodec_free_context(&av_codec_ctx); // avcodec_close(av_codec_ctx);
         av_frame_free(&av_frame);
         avformat_close_input(&av_format_ctx);
@@ -421,8 +437,7 @@ namespace ShutterAndroidJNI{
         height = -1;
 
         is_decoding = false;
-        delete my_buffer;
-//        SHUTTER_TRACE("Decoder Destroyed");
+        fprintf(stderr, "Decoder Destroyed\n");
         sws_freeContext(sws_scaler_ctx);
     }
 

@@ -107,8 +107,7 @@ namespace ShutterAndroidJNI{
         uint32_t image_buffer_size = 0;
 
         const char* src_filename = nullptr;
-
-        uint8_t * my_buffer = nullptr;
+        int loop_cnt = 0 ;
     };
 
 }
