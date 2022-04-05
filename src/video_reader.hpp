@@ -62,7 +62,7 @@ namespace ShutterAndroidJNI{
         LibavVideoDecoder() = default;
         ~LibavVideoDecoder();
         int InitDecoder(std::string& sourcePath, bool loop);
-        bool Decode(int64_t elapsedTime, uint8_t* image_buffer);
+        bool Decode(int64_t elapsedTime, uint8_t* image_buffer, double& pt_in_seconds);
         void ReleaseDecoder();
 
         int open_codec_context(enum AVMediaType type);

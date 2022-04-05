@@ -327,16 +327,13 @@ namespace ShutterAndroidJNI{
 
         image_buffer_size = av_image_get_buffer_size(outputFormat, width, height, 1);
 
-//        { // test
-//            my_buffer = new uint8_t [image_buffer_size];
-//        }
         fprintf(stderr,"native source path %s, buffer size %d", src_filename, image_buffer_size);
 
         return (int) image_buffer_size;
 
     }
 
-    bool LibavVideoDecoder::Decode(int64_t elapsedTime, uint8_t* image_buffer){
+    bool LibavVideoDecoder::Decode(int64_t elapsedTime, uint8_t* image_buffer, double & pt_in_seconds){
         int ret;
         while (av_read_frame(av_format_ctx, av_packet) >= 0) {
             if (av_packet->size == 0) {
@@ -400,6 +397,11 @@ namespace ShutterAndroidJNI{
                 sws_scale(sws_scaler_ctx, av_frame->data, av_frame->linesize, 0, av_frame->height, dest, dest_linesize);
 
             // if here , we read 1 frame successfully
+            auto pts = av_frame->pts;
+            auto num = av_format_ctx->streams[video_stream_idx]->time_base.num;
+            auto den = av_format_ctx->streams[video_stream_idx]->time_base.den;
+
+            pt_in_seconds = (double)pts * (double)num / (double)den;
 
             av_packet_unref(av_packet);
             return true;
@@ -426,7 +428,6 @@ namespace ShutterAndroidJNI{
     }
 
     void LibavVideoDecoder::ReleaseDecoder(){
-        fprintf(stderr, "Decoder Destroyed initiated\n");
         avcodec_free_context(&av_codec_ctx); // avcodec_close(av_codec_ctx);
         av_frame_free(&av_frame);
         avformat_close_input(&av_format_ctx);

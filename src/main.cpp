@@ -23,18 +23,6 @@ int main(int argc, const char** argv) {
 
     ShutterAndroidJNI::LibavVideoDecoder decoder = ShutterAndroidJNI::LibavVideoDecoder();
 
-//    std::string src = "/Users/anshulsaraf/Downloads/40_sss_loop.mov" ;
-//    std::string src = "/Users/anshulsaraf/Downloads/colour_particals.mov" ;
-
-//    std::string src = "/Users/anshulsaraf/Downloads/2a3d50ef_1647944187358_sc.webm";
-
-//    std::string src = "/Users/anshulsaraf/Downloads/file_example_AVI_640_800kB.avi" ;
-
-//    std::string src = "/Users/anshulsaraf/Downloads/sample_640x360.hevc" ; **
-//    std::string src = "/Users/anshulsaraf/Downloads/sample_640x360.flv" ;
-
-//    std::string src = "/Users/anshulsaraf/Downloads/sample-5s.mp4" ;
-
     std::vector<std::string> src = {
             "/Users/anshulsaraf/Downloads/40_sss_loop.mov", // 4k file - 0
             "/Users/anshulsaraf/Downloads/colour_particals.mov", // 1
@@ -42,10 +30,11 @@ int main(int argc, const char** argv) {
             "/Users/anshulsaraf/Downloads/file_example_AVI_640_800kB.avi", // 3
             "/Users/anshulsaraf/Downloads/sample_640x360.hevc", // not looping // 4 // av_format_ctx-> start_time and duration == (int64 overflow)
             "/Users/anshulsaraf/Downloads/sample_640x360.flv", // 5
-            "/Users/anshulsaraf/Downloads/sample-5s.mp4" // 6
+            "/Users/anshulsaraf/Downloads/sample-5s.mp4", // 6
+            "/Users/anshulsaraf/Downloads/sample_640x360.mkv" // 7
     };
 
-    decoder.InitDecoder(src[0], true);
+    decoder.InitDecoder(src[2], false); // loop false for 60 fps // first loop
 
     glfwMakeContextCurrent(window);
 
@@ -83,9 +72,9 @@ int main(int argc, const char** argv) {
         glMatrixMode(GL_MODELVIEW);
 
         // Read a new frame and load it into texture
-//        int64_t pts;
+        double pt_in_seconds = -1; /* = pts * (double)vr_state.time_base.num / (double)vr_state.time_base.den;*/
 
-        if (!decoder.Decode(frames++, frame_data)) {
+        if (!decoder.Decode(frames++, frame_data, pt_in_seconds)) {
             printf("Couldn't load video frame\n");
             break;
         }
@@ -95,12 +84,10 @@ int main(int argc, const char** argv) {
             glfwSetTime(0.0);
             first_frame = false;
         }
-
-//        double pt_in_seconds = pts * (double)vr_state.time_base.num / (double)vr_state.time_base.den;
-//        while (pt_in_seconds > glfwGetTime()) {
-//            glfwWaitEventsTimeout(pt_in_seconds - glfwGetTime());
-//        }
-//        sleep(1);
+//        printf("pts : %f", pt_in_seconds);
+        while (pt_in_seconds != -1 && pt_in_seconds > glfwGetTime()) {
+            glfwWaitEventsTimeout(pt_in_seconds - glfwGetTime());
+        }
 
         glBindTexture(GL_TEXTURE_2D, tex_handle);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_width, frame_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame_data);
@@ -115,8 +102,6 @@ int main(int argc, const char** argv) {
             glTexCoord2d(0,1); glVertex2i(200, 200 + frame_height);
         glEnd();
         glDisable(GL_TEXTURE_2D);
-
-//        sleep(10);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
