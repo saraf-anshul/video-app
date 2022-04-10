@@ -6,6 +6,9 @@
 #include <vector>
 #include "video_reader.hpp"
 
+inline long long time_in_ms() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
 
 int main(int argc, const char** argv) {
     GLFWwindow* window;
@@ -26,15 +29,17 @@ int main(int argc, const char** argv) {
     std::vector<std::string> src = {
             "/Users/anshulsaraf/Downloads/40_sss_loop.mov", // 4k file - 0
             "/Users/anshulsaraf/Downloads/colour_particals.mov", // 1
-            "/Users/anshulsaraf/Downloads/2a3d50ef_1647944187358_sc.webm", // 2 // looping solved
-            "/Users/anshulsaraf/Downloads/file_example_AVI_640_800kB.avi", // 3
-            "/Users/anshulsaraf/Downloads/sample_640x360.hevc", // not looping // 4 // av_format_ctx-> start_time and duration == (int64 overflow)
+            "/Users/anshulsaraf/Downloads/2a3d50ef_1647944187358_sc.webm", // 2 // NO MULTI-THREADING
+            "/Users/anshulsaraf/Downloads/file_example_AVI_640_800kB.avi", // 3 // NO TIMING
+            "/Users/anshulsaraf/Downloads/sample_640x360.hevc", // not looping // 4 // av_format_ctx-> start_time and duration == (int64 overflow) // NO TIMING
             "/Users/anshulsaraf/Downloads/sample_640x360.flv", // 5
             "/Users/anshulsaraf/Downloads/sample-5s.mp4", // 6
             "/Users/anshulsaraf/Downloads/sample_640x360.mkv" // 7
     };
 
-    decoder.InitDecoder(src[2], false); // loop false for 60 fps // first loop
+    auto s = time_in_ms();
+
+    decoder.InitDecoder(src[3], false); // loop false for 60 fps // first loop
 
     glfwMakeContextCurrent(window);
 
@@ -109,6 +114,8 @@ int main(int argc, const char** argv) {
 
     decoder.ReleaseDecoder();
     free(frame_data);
+
+    fprintf(stderr, "time : %lli", time_in_ms() - s);
 
     return 0;
 }

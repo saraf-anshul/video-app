@@ -1,45 +1,9 @@
-//#ifndef video_reader_hpp
-//#define video_reader_hpp
-//
-//extern "C" {
-//#include <libavcodec/avcodec.h>
-//#include <libavformat/avformat.h>
-//#include <libswscale/swscale.h>
-//#include "libavutil/imgutils.h"
-//#include <inttypes.h>
-//}
-//
-//struct VideoReaderState {
-//    // Public things for other parts of the program to read from
-//    int width, height;
-//    AVRational time_base;
-//
-//    // Private internal state
-//    AVFormatContext* av_format_ctx;
-//    AVCodecContext* av_codec_ctx;
-//    int video_stream_index;
-//    AVFrame* av_frame;
-//    AVPacket* av_packet;
-//    SwsContext* sws_scaler_ctx;
-//};
-//
-//bool video_reader_open(VideoReaderState* state, const char* filename);
-//bool video_reader_read_frame(VideoReaderState* state, uint8_t* frame_buffer, int64_t* pts);
-//bool video_reader_seek_frame(VideoReaderState* state, int64_t ts);
-//void video_reader_close(VideoReaderState* state);
-//
-//#endif
-
 //
 // Created by Anshul Saraf on 13/03/22.
 //
 
 #ifndef SHUTTER_LIBAVVIDEODECODER_H
 #define SHUTTER_LIBAVVIDEODECODER_H
-
-//#include "core/VideoDecoder.h"
-//#include "graphics/core/renderer/Texture.h"
-//#include "graphics/core/include/Ref.h"
 
 #include <string>
 
@@ -61,7 +25,7 @@ namespace ShutterAndroidJNI{
     public:
         LibavVideoDecoder() = default;
         ~LibavVideoDecoder();
-        int InitDecoder(std::string& sourcePath, bool loop);
+        int InitDecoder(std::string& sourcePath, bool loop, bool enable_multi_threading);
         bool Decode(int64_t elapsedTime, uint8_t* image_buffer, double& pt_in_seconds);
         void ReleaseDecoder();
 
@@ -105,6 +69,10 @@ namespace ShutterAndroidJNI{
         AVPixelFormat outputFormat = AV_PIX_FMT_RGBA;
         int video_stream_idx = -1;
         uint32_t image_buffer_size = 0;
+
+        int avg_fps = 0;
+
+        bool multi_thread = false;
 
         const char* src_filename = nullptr;
         int loop_cnt = 0 ;
